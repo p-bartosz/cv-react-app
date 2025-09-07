@@ -22,11 +22,13 @@ interface CVQualifications {
 }
 
 export interface CVExperience extends CVQualifications {
+  id: string;
   company: string;
   position: string;
 }
 
 export interface CVEducation extends CVQualifications {
+  id: string;
   institution: string;
   degree: string;
 }

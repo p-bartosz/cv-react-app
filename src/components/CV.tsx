@@ -1,24 +1,123 @@
-import { useState } from 'react';
+import { JSX, useRef, useState } from 'react';
+import { useReactToPrint } from 'react-to-print';
 import styles from './CV.module.scss';
 import { CVFields } from '../models/CVFields';
 import { CVFieldsInit } from '../models/CVFields.init';
+import CVPersonalDataSection from './cv-builder/CVPersonalDataSection';
+import PreviewPanel from './PreviewPanel';
+import ExperienceSection from './cv-builder/ExperienceSection';
+import EducationSection from './cv-builder/EducationSection';
+import CVHeader from './cv-builder/CVHeader';
 
-export default function CV() {
+type NestedKey = 'experience' | 'education';
+
+const newExperience = () => ({
+  id: crypto.randomUUID?.() ?? String(Date.now() + Math.random()),
+  company: '',
+  position: '',
+  startDate: '',
+  endDate: '',
+  description: '',
+});
+
+const newEducation = () => ({
+  id: crypto.randomUUID?.() ?? String(Date.now() + Math.random()),
+  institution: '',
+  degree: '',
+  startDate: '',
+  endDate: '',
+  description: '',
+});
+
+export default function CV(): JSX.Element {
   const [cvFields, setCvFields] = useState<CVFields>(CVFieldsInit);
+  const [isExperienceOpen, setIsExperienceOpen] = useState(true);
+  const [isEducationOpen, setIsEducationOpen] = useState(true);
 
-  const updateFields = (newFields: Partial<CVFields>) => {
-    setCvFields({ ...cvFields, ...newFields });
+  const previewRef = useRef<HTMLDivElement>(null);
+
+  const handlePrint = useReactToPrint({
+    contentRef: previewRef,
+    documentTitle: `${cvFields.firstName || 'CV'}_${cvFields.lastName || ''}`.trim(),
+    pageStyle: `
+      @page { size: A4; margin: 16mm; }
+      @media print {
+        body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .${styles.app} { display: block; }
+        .${styles.editorPanel}, .${styles.actionBar} { display: none !important; }
+        .${styles.previewPanel} { box-shadow: none !important; margin: 0 !important; }
+        .${styles.cvPage} { box-shadow: none !important; }
+      }
+    `,
+  });
+
+  const updateFields = (patch: Partial<CVFields>) => {
+    setCvFields(prev => ({ ...prev, ...patch }));
   };
 
-  return <div className={styles.cvContainer}>
-    <input type="text" placeholder="First Name" className={styles.field} value={cvFields.firstName} onChange={e => updateFields({ firstName: e.target.value })} />
-    <input type="text" placeholder="Last Name" className={styles.field} value={cvFields.lastName} onChange={e => updateFields({ lastName: e.target.value })} />
-    <input type="email" placeholder="Email" className={styles.field} value={cvFields.email} onChange={e => updateFields({ email: e.target.value })} />
-    <input type="tel" placeholder="Phone" className={styles.field} value={cvFields.phone} onChange={e => updateFields({ phone: e.target.value })} />
-    <input type="text" placeholder="Address" className={styles.field} value={cvFields.address} onChange={e => updateFields({ address: e.target.value })} />
-    <input type="text" placeholder="City" className={styles.field} value={cvFields.city} onChange={e => updateFields({ city: e.target.value })} />
-    <input type="text" placeholder="Postal Code" className={styles.field} value={cvFields.postalCode} onChange={e => updateFields({ postalCode: e.target.value })} />
-    <input type="text" placeholder="Country" className={styles.field} value={cvFields.country} onChange={e => updateFields({ country: e.target.value })} />
-    <textarea placeholder="Summary" className={styles.field} value={cvFields.summary} onChange={e => updateFields({ summary: e.target.value })} />
-  </div>;
+  const handleNestedArrayFieldChange = (
+    field: NestedKey,
+    index: number,
+    key: string,
+    value: string
+  ) => {
+    setCvFields(prev => {
+      const arr = [...((prev[field] as any[]) ?? [])];
+      arr[index] = { ...(arr[index] || {}), [key]: value };
+      return { ...prev, [field]: arr } as CVFields;
+    });
+  };
+
+  const handleRemoveItem = (field: NestedKey, index: number) => {
+    setCvFields(prev => {
+      const arr = [...((prev[field] as any[]) ?? [])];
+      arr.splice(index, 1);
+      return { ...prev, [field]: arr } as CVFields;
+    });
+  };
+
+  const handleAddItem = (field: NestedKey) => {
+    setCvFields(prev => {
+      const arr = [...((prev[field] as any[]) ?? [])];
+      arr.push(field === 'experience' ? newExperience() : newEducation());
+      return { ...prev, [field]: arr } as CVFields;
+    });
+  };
+
+  return (
+    <div className={styles.app}>
+
+      <aside className={styles.editorPanel}>
+        <CVHeader />
+
+        <CVPersonalDataSection cvFields={cvFields} updateFields={updateFields} />
+
+        <ExperienceSection
+          experience={cvFields.experience || []}
+          handleNestedArrayFieldChange={handleNestedArrayFieldChange}
+          handleRemoveItem={handleRemoveItem}
+          handleAddItem={handleAddItem}
+          isExperienceOpen={isExperienceOpen}
+          setIsExperienceOpen={setIsExperienceOpen}
+        />
+
+        <EducationSection
+          education={cvFields.education || []}
+          handleNestedArrayFieldChange={handleNestedArrayFieldChange}
+          handleRemoveItem={handleRemoveItem}
+          handleAddItem={handleAddItem}
+          isEducationOpen={isEducationOpen}
+          setIsEducationOpen={setIsEducationOpen}
+        />
+
+        <div className={`${styles.actionBar} ${styles.stickyBar}`}>
+          <button type="button" className={styles.printBtn} onClick={handlePrint}>
+            🖨️ Drukuj / PDF
+          </button>
+        </div>
+      </aside>
+
+      <PreviewPanel ref={previewRef} cvFields={cvFields} />
+    </div>
+  );
 }

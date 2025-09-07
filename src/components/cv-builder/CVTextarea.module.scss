@@ -1,0 +1,26 @@
+.inputGroup {
+  display: flex; flex-direction: column; gap: 6px;
+
+  span {
+    font-size: 12px; color: var(--muted);
+  }
+
+  textarea {
+    background: #0f1420;
+    color: var(--text);
+    border: 1px solid #222a3b;
+    border-radius: 10px;
+    padding: 10px 12px;
+    outline: none;
+    transition: border-color .2s, box-shadow .2s, background .2s;
+
+    &:focus {
+      border-color: #2a7fff;
+      box-shadow: 0 0 0 3px rgba(42,127,255,.15);
+      background: #0e1320;
+    }
+  }
+  textarea {
+    resize: vertical;
+  }
+}
