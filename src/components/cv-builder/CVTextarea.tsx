@@ -7,9 +7,10 @@ interface CVTextareaProps {
   placeholder: string;
   inputTitle?: string;
   rows?: number;
+  onBlur?: (e: React.FocusEvent<HTMLTextAreaElement>) => void;
 }
 
-export default function CVTextarea({ cvField, updateFields, placeholder = '', inputTitle = '', rows = 4 }: CVTextareaProps): JSX.Element {
+export default function CVTextarea({ cvField, updateFields, placeholder = '', inputTitle = '', rows = 4, onBlur }: CVTextareaProps): JSX.Element {
   return (
     <label className={styles.inputGroup}>
       <span>{inputTitle}</span>
@@ -18,6 +19,7 @@ export default function CVTextarea({ cvField, updateFields, placeholder = '', in
         value={cvField}
         onChange={(e) => updateFields(e.target.value)}
         placeholder={placeholder}
+        onBlur={onBlur}
       />
     </label>
   );

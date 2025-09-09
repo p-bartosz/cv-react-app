@@ -1,15 +1,20 @@
 import { JSX } from 'react';
 import styles from './CVShared.module.scss';
-import { CVFields } from '../../models/CVFields';
+import { CVErrorFields, CVFields } from '../../models/CVFields';
 import CVInput from './CVInput';
 import CVTextarea from './CVTextarea';
 
 interface CVPersonalDataSectionProps {
   cvFields: CVFields;
   updateFields: (patch: Partial<CVFields>) => void;
+  errors: CVErrorFields;
+  validateField: (
+    field: string,
+    value: string,
+  ) => void;
 }
 
-export default function CVPersonalDataSection({ cvFields, updateFields }: CVPersonalDataSectionProps): JSX.Element {
+export default function CVPersonalDataSection({ cvFields, updateFields, errors, validateField }: CVPersonalDataSectionProps): JSX.Element {
 
   return (
     <section className={styles.card}>
@@ -20,12 +25,16 @@ export default function CVPersonalDataSection({ cvFields, updateFields }: CVPers
           updateFields={(firstName) => updateFields({ firstName })}
           placeholder="Name"
           inputTitle="First Name"
+          errorMessage={errors.firstName}
+          onBlur={e => validateField('firstName', e.target.value)}
         />
         <CVInput
           cvField={cvFields.lastName}
           updateFields={(lastName) => updateFields({ lastName })}
           placeholder="Last Name"
           inputTitle="Last Name"
+          errorMessage={errors.lastName}
+          onBlur={e => validateField('lastName', e.target.value)}
         />
         <CVInput
           cvField={cvFields.email}
@@ -33,6 +42,8 @@ export default function CVPersonalDataSection({ cvFields, updateFields }: CVPers
           placeholder="Email"
           type="email"
           inputTitle="Email"
+          errorMessage={errors.email}
+          onBlur={e => validateField('email', e.target.value)}
         />
         <CVInput
           cvField={cvFields.phone}
@@ -40,6 +51,8 @@ export default function CVPersonalDataSection({ cvFields, updateFields }: CVPers
           placeholder="+48 ..."
           type="tel"
           inputTitle="Phone"
+          errorMessage={errors.phone}
+          onBlur={e => validateField('phone', e.target.value)}
         />
         <CVInput
           cvField={cvFields.city}

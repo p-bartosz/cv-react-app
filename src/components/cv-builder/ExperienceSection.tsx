@@ -2,7 +2,7 @@ import React from 'react';
 import styles from '../CV.module.scss';
 import CVInput from './CVInput';
 import CVTextarea from './CVTextarea';
-import { CVExperience } from '../../models/CVFields';
+import { CVErrorFields, CVExperience } from '../../models/CVFields';
 
 type ExperienceSectionProps = {
   experience: CVExperience[];
@@ -16,6 +16,13 @@ type ExperienceSectionProps = {
   handleAddItem: (field: 'experience') => void;
   isExperienceOpen: boolean;
   setIsExperienceOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  errors: CVErrorFields;
+  validateField: (
+    field: string,
+    value: string,
+    index?: number,
+    section?: 'experience'
+  ) => void;
 };
 
 const ExperienceSection: React.FC<ExperienceSectionProps> = ({
@@ -25,6 +32,7 @@ const ExperienceSection: React.FC<ExperienceSectionProps> = ({
   handleAddItem,
   isExperienceOpen,
   setIsExperienceOpen,
+  validateField,
 }) => {
   return (
     <section className={styles.card}>
@@ -50,24 +58,28 @@ const ExperienceSection: React.FC<ExperienceSectionProps> = ({
                   updateFields={e => handleNestedArrayFieldChange('experience', index, 'company', e)}
                   placeholder="Company"
                   inputTitle="Company"
+                  onBlur={e => validateField('company', e.target.value, index, 'experience')}
                 />
                 <CVInput
                   cvField={exp.position}
                   updateFields={e => handleNestedArrayFieldChange('experience', index, 'position', e)}
                   placeholder="Position"
                   inputTitle="Position"
+                  onBlur={e => validateField('position', e.target.value, index, 'experience')}
                 />
                 <CVInput
                   cvField={exp.startDate}
                   updateFields={e => handleNestedArrayFieldChange('experience', index, 'startDate', e)}
                   placeholder="Start Date"
                   inputTitle="Start Date"
+                  onBlur={e => validateField('startDate', e.target.value, index, 'experience')}
                 />
                 <CVInput
                   cvField={exp.endDate}
                   updateFields={e => handleNestedArrayFieldChange('experience', index, 'endDate', e)}
                   placeholder="End Date"
                   inputTitle="End Date"
+                  onBlur={e => validateField('endDate', e.target.value, index, 'experience')}
                 />
               </div>
 
@@ -77,6 +89,7 @@ const ExperienceSection: React.FC<ExperienceSectionProps> = ({
                 placeholder="Description"
                 rows={3}
                 inputTitle="Description"
+                onBlur={e => validateField('description', e.target.value, index, 'experience')}
               />
 
               <div className={styles.itemActions}>

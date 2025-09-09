@@ -9,7 +9,7 @@ import ExperienceSection from './cv-builder/ExperienceSection';
 import EducationSection from './cv-builder/EducationSection';
 import CVHeader from './cv-builder/CVHeader';
 
-type NestedKey = 'experience' | 'education';
+export type NestedKey = 'experience' | 'education';
 
 const newExperience = () => ({
   id: crypto.randomUUID?.() ?? String(Date.now() + Math.random()),
@@ -18,6 +18,7 @@ const newExperience = () => ({
   startDate: '',
   endDate: '',
   description: '',
+  postalCode: '',
 });
 
 const newEducation = () => ({
@@ -27,12 +28,25 @@ const newEducation = () => ({
   startDate: '',
   endDate: '',
   description: '',
+  postalCode: '',
 });
+
+type CVErrorFields = {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+  [key: `experience-${number}-company`]: string | undefined;
+  [key: `experience-${number}-position`]: string | undefined;
+  [key: `education-${number}-institution`]: string | undefined;
+  [key: `education-${number}-degree`]: string | undefined;
+};
 
 export default function CV(): JSX.Element {
   const [cvFields, setCvFields] = useState<CVFields>(CVFieldsInit);
   const [isExperienceOpen, setIsExperienceOpen] = useState(true);
   const [isEducationOpen, setIsEducationOpen] = useState(true);
+  const [errors, setErrors] = useState<CVErrorFields>({});
 
   const previewRef = useRef<HTMLDivElement>(null);
 
@@ -84,13 +98,72 @@ export default function CV(): JSX.Element {
     });
   };
 
+  const validateFields = (): boolean => {
+    const newErrors: CVErrorFields = {};
+
+    if (!cvFields.firstName) newErrors.firstName = 'First name is required';
+    if (!cvFields.lastName) newErrors.lastName = 'Last name is required';
+    if (!cvFields.email) newErrors.email = 'Email is required';
+    if (!cvFields.phone) newErrors.phone = 'Phone number is required';
+
+    cvFields.experience?.forEach((exp, index) => {
+      if (!exp.company) newErrors[`experience-${index}-company`] = 'Company is required';
+      if (!exp.position) newErrors[`experience-${index}-position`] = 'Position is required';
+    });
+
+    cvFields.education?.forEach((edu, index) => {
+      if (!edu.institution) newErrors[`education-${index}-institution`] = 'Institution is required';
+      if (!edu.degree) newErrors[`education-${index}-degree`] = 'Degree is required';
+    });
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const validateField = (field: string, value: string, index?: number, section?: NestedKey) => {
+    setErrors(prevErrors => {
+      const newErrors = { ...prevErrors };
+      console.log('Validating field:', field, value, index, section);
+      
+
+      if (section && typeof index === 'number') {
+        const key = `${section}-${index}-${field}`;
+        if (!value) {
+          newErrors[key] = `${field.charAt(0).toUpperCase() + field.slice(1)} is required`;
+        } else {
+          delete newErrors[key];
+        }
+      } else {
+        if (!value) {
+          newErrors[field] = `${field.charAt(0).toUpperCase() + field.slice(1)} is required`;
+        } else {
+          delete newErrors[field];
+        }
+      }
+
+      return newErrors;
+    });
+  };
+
+  const handleSubmit = () => {
+    if (validateFields()) {
+      console.log('Form is valid, submitting:', cvFields);
+    } else {
+      console.log('Form has errors:', errors);
+    }
+  };
+
   return (
     <div className={styles.app}>
-
       <aside className={styles.editorPanel}>
         <CVHeader />
 
-        <CVPersonalDataSection cvFields={cvFields} updateFields={updateFields} />
+        <CVPersonalDataSection
+          cvFields={cvFields}
+          updateFields={updateFields}
+          errors={errors}
+          validateField={validateField}
+        />
 
         <ExperienceSection
           experience={cvFields.experience || []}
@@ -99,6 +172,8 @@ export default function CV(): JSX.Element {
           handleAddItem={handleAddItem}
           isExperienceOpen={isExperienceOpen}
           setIsExperienceOpen={setIsExperienceOpen}
+          errors={errors}
+          validateField={validateField}
         />
 
         <EducationSection
@@ -108,6 +183,8 @@ export default function CV(): JSX.Element {
           handleAddItem={handleAddItem}
           isEducationOpen={isEducationOpen}
           setIsEducationOpen={setIsEducationOpen}
+          errors={errors}
+          validateField={validateField}
         />
 
         <div className={`${styles.actionBar} ${styles.stickyBar}`}>
@@ -118,6 +195,12 @@ export default function CV(): JSX.Element {
       </aside>
 
       <PreviewPanel ref={previewRef} cvFields={cvFields} />
+
+      <div className={styles.actionBar}>
+        <button type="button" className={styles.primaryBtn} onClick={handleSubmit}>
+          Submit
+        </button>
+      </div>
     </div>
   );
 }

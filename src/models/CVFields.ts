@@ -37,3 +37,11 @@ export interface CVLanguage {
   language: string;
   proficiency: string;
 }
+
+export type CVErrorFields = {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+  [key: `experience-${number}-company` | `experience-${number}-position` | `education-${number}-institution` | `education-${number}-degree`]: string | undefined;
+};

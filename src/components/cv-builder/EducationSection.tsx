@@ -1,5 +1,7 @@
 import React from 'react';
 import styles from '../CV.module.scss';
+import { CVErrorFields } from '../../models/CVFields';
+import { NestedKey } from '../CV';
 
 type EducationSectionProps = {
   education: any[];
@@ -13,6 +15,13 @@ type EducationSectionProps = {
   handleAddItem: (field: 'education') => void;
   isEducationOpen: boolean;
   setIsEducationOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  errors: CVErrorFields;
+  validateField: (
+    field: string,
+    value: string,
+    index?: number,
+    section?: NestedKey
+  ) => void;
 };
 
 const EducationSection: React.FC<EducationSectionProps> = ({
@@ -22,6 +31,8 @@ const EducationSection: React.FC<EducationSectionProps> = ({
   handleAddItem,
   isEducationOpen,
   setIsEducationOpen,
+  errors,
+  validateField
 }) => {
   return (
     <section className={styles.card}>
@@ -50,6 +61,9 @@ const EducationSection: React.FC<EducationSectionProps> = ({
                     onChange={(e) =>
                       handleNestedArrayFieldChange('education', index, 'institution', e.target.value)
                     }
+                    onBlur={(e) =>
+                      validateField('institution', e.target.value, index, 'education')
+                    }
                     placeholder="Politechnika Gdańska"
                   />
                 </label>
@@ -61,6 +75,7 @@ const EducationSection: React.FC<EducationSectionProps> = ({
                     onChange={(e) =>
                       handleNestedArrayFieldChange('education', index, 'degree', e.target.value)
                     }
+                    onBlur={(e) => validateField('degree', e.target.value, index, 'education')}
                     placeholder="Informatyka, mgr inż."
                   />
                 </label>
@@ -72,6 +87,9 @@ const EducationSection: React.FC<EducationSectionProps> = ({
                     onChange={(e) =>
                       handleNestedArrayFieldChange('education', index, 'startDate', e.target.value)
                     }
+                    onBlur={(e) =>
+                      validateField('startDate', e.target.value, index, 'education')
+                    }
                   />
                 </label>
                 <label className={styles.inputGroup}>
@@ -82,6 +100,7 @@ const EducationSection: React.FC<EducationSectionProps> = ({
                     onChange={(e) =>
                       handleNestedArrayFieldChange('education', index, 'endDate', e.target.value)
                     }
+                    onBlur={(e) => validateField('endDate', e.target.value, index, 'education')}
                   />
                 </label>
               </div>
@@ -93,6 +112,9 @@ const EducationSection: React.FC<EducationSectionProps> = ({
                   value={edu.description}
                   onChange={(e) =>
                     handleNestedArrayFieldChange('education', index, 'description', e.target.value)
+                  }
+                  onBlur={(e) =>
+                    validateField('description', e.target.value, index, 'education')
                   }
                   placeholder="Specjalizacja, praca dyplomowa, wyróżnienia…"
                 />
