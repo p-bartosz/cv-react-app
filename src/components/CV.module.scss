@@ -136,19 +136,13 @@
 .cvSectionTitle {
   font-size: 14px; letter-spacing: .25px; margin: 0 0 8px;
   color: #0f172a; position: relative;
-  &:after {
-    content: ""; display: block; height: 2px; width: 36px; background: #4f46e5; margin-top: 6px;
-  }
 }
 .cvParagraph { margin: 0; color: #1f2937; line-height: 1.5; }
 
 .timeline {
   list-style: none; margin: 0; padding: 2px 0 0 0; position: relative;
 }
-.timelineItem {
-  display: grid; grid-template-columns: 16px 1fr; gap: 10px; margin-bottom: 12px;
-  position: relative;
-}
+.timelineItem {}
 .timelineItem:not(:last-child)::after {
   content: ""; position: absolute; left: 7px; top: 14px; bottom: -6px; width: 2px; background: #ececf5;
 }
